@@ -18,8 +18,8 @@ pip install requests
 
 ### Usage
 
-Pass the panel URL and Application API key either as environment variables
-(recommended — keeps secrets out of your shell history):
+Pass the panel URL and Application API key as environment variables
+(keeps secrets out of your shell history):
 
 ```bash
 export PTERO_URL="https://your.panel.example.com"
@@ -28,20 +28,12 @@ export PTERO_API_KEY="ptla_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 python3 tools/import_eggs.py
 ```
 
-or as command-line flags:
-
-```bash
-python3 tools/import_eggs.py \
-    --url https://your.panel.example.com \
-    --api-key ptla_xxxx
-```
-
 ### Options
 
 | Flag | Env var | Description |
 |---|---|---|
 | `--url URL` | `PTERO_URL` | Base URL of the Pterodactyl panel (required) |
-| `--api-key KEY` | `PTERO_API_KEY` | Application API key with full access (required) |
+| — | `PTERO_API_KEY` | Application API key with full access (required) |
 | `--dry-run` | — | Print what would happen without calling the API |
 | `--nest-name NAME` | — | Only import eggs in the named nest (e.g. `Minecraft`) |
 | `--repo-root PATH` | — | Override the repository root path |
