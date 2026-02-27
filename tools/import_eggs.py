@@ -11,11 +11,6 @@ Usage (environment variables):
     export PTERO_API_KEY=ptla_xxxxxxxxxxxx
     python3 tools/import_eggs.py
 
-Usage (command-line flags):
-    python3 tools/import_eggs.py \
-        --url https://pt.example.com \
-        --api-key ptla_xxxxxxxxxxxx
-
 Optional flags:
     --dry-run          Print what would be done without making any API calls.
     --nest-name NAME   Only import eggs that belong to the given nest name.
@@ -363,7 +358,7 @@ def run(args: argparse.Namespace) -> int:
     print("Fetching existing nests from panel …")
     try:
         existing_nests = client.list_nests()
-    except (requests.HTTPError, requests.ConnectionError, requests.exceptions.RequestException) as exc:
+    except requests.exceptions.RequestException as exc:
         if args.dry_run:
             print(f"  WARNING: Could not reach panel ({exc}); assuming no nests exist yet.")
             existing_nests = []
@@ -392,7 +387,7 @@ def run(args: argparse.Namespace) -> int:
                 nest_id = result["attributes"]["id"]
                 nest_by_name[nest_name] = nest_id
                 print(f"  Created nest with id={nest_id}")
-            except (requests.HTTPError, requests.exceptions.RequestException) as exc:
+            except requests.exceptions.RequestException as exc:
                 print(f"  ERROR: Could not create nest '{nest_name}': {exc}", file=sys.stderr)
                 total_failed += len(egg_list)
                 continue
@@ -405,7 +400,7 @@ def run(args: argparse.Namespace) -> int:
             try:
                 ex = client.list_eggs(nest_id)
                 existing_egg_names = {e["attributes"]["name"] for e in ex}
-            except (requests.HTTPError, requests.exceptions.RequestException):
+            except requests.exceptions.RequestException:
                 pass  # not fatal – we'll just try to import everything
 
         # Import each egg
@@ -467,11 +462,6 @@ def main() -> None:
         help="Base URL of your Pterodactyl panel (env: PTERO_URL)",
     )
     parser.add_argument(
-        "--api-key",
-        default=os.environ.get("PTERO_API_KEY", ""),
-        help="Application API key (env: PTERO_API_KEY). Never pass this in plain shell history.",
-    )
-    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print what would be done without making any API calls.",
@@ -491,8 +481,9 @@ def main() -> None:
 
     if not args.url:
         parser.error("Panel URL is required (--url or PTERO_URL env var).")
+    args.api_key = os.environ.get("PTERO_API_KEY", "")
     if not args.api_key:
-        parser.error("API key is required (--api-key or PTERO_API_KEY env var).")
+        parser.error("API key is required. Set the PTERO_API_KEY environment variable.")
 
     sys.exit(run(args))
 
