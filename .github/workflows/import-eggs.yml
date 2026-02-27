@@ -1,0 +1,47 @@
+name: Import Eggs into Pterodactyl
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — print actions without calling the API"
+        type: boolean
+        default: false
+      nest_name:
+        description: "Import only this nest (leave blank to import all)"
+        type: string
+        default: ""
+
+jobs:
+  import:
+    name: Import eggs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run import script
+        env:
+          PTERO_URL: ${{ secrets.PTERO_URL }}
+          PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+          INPUT_NEST_NAME: ${{ inputs.nest_name }}
+        run: |
+          ARGS=()
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          if [ -n "$INPUT_NEST_NAME" ]; then
+            ARGS+=(--nest-name "$INPUT_NEST_NAME")
+          fi
+          python3 tools/import_eggs.py "${ARGS[@]}"
